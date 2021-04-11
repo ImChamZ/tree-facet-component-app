@@ -1,0 +1,126 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 14px;
+  color: #333;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.category-main-row {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.category-main-row .card {
+  height: 100%;
+}
+
+.category-main-row .card-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.category-main-row .card-body {
+  overflow-y: auto;
+  max-height: 79vh;
+  padding: 1em;
+}
+.product-row {
+  width: 100%;
+  padding: 0 20px;
+}
+.data-row label {
+  margin: 0;
+}
+
+.product-row .parent-row {
+  font-size: 18px;
+}
+
+.btn-wrapper {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  padding: 12px;
+  margin-top: 0px;
+  height: 100vh;
+}
+.data-row {
+  align-items: center;
+  margin: 5px 0;
+}
+
+.data-row input[type="checkbox"] {
+  margin: 0 10px 0 10px;
+}
+
+.data-row i {
+  font-size: 1em;
+  color: #92959c;
+  margin-right: 10px;
+  width: 5px;
+  line-height: 15px;
+  cursor: pointer;
+}
+
+.data-row .fa-trash-o {
+  color: #ff5807;
+  margin-right: 5px;
+  float: right;
+  cursor: pointer;
+}
+
+.data-row .fa-trash-o.tree-view {
+  margin-right: 5px;
+  float: left;
+  margin: 2px 15px 0 0;
+}
+
+.data-row .fa-trash-o.tree-view.parent {
+  margin-top: 6px;
+}
+
+.action-wrapper {
+  width: 40px;
+  float: left;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 3px;
+}
+
+.data-row .action-wrapper.parent {
+  margin-top: 6px;
+}
+
+.data-row.selected {
+  margin: 5px 0;
+  border: 1px solid #e0e0e0;
+  padding: 10px;
+  border-radius: 5px;
+  background: #f4f4f4;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.data-row.selected .details-row {
+  align-items: center;
+  justify-content: space-between;
+  display: flex;
+}
+
+.spinner-grow {
+  top: 25%;
+  left: 45%;
+  position: relative;
+}
+
+.card-body .empty-list-message {
+  margin-top: 25%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
