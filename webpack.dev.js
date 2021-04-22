@@ -1,6 +1,6 @@
-const HtmlWebPackPlugin = require("html-webpack-plugin");
 var webpack = require("webpack");
 const path = require("path");
+const HtmlWebPackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   mode: "development",
@@ -27,11 +27,8 @@ module.exports = {
         use: ["babel-loader"],
       },
       {
-        test: /\.css$/i,
-        use: [
-          { loader: "style-loader", options: { injectType: "linkTag" } },
-          { loader: "file-loader" },
-        ],
+        test: /\.(scss|css)$/,
+        use: ["style-loader", "css-loader", "sass-loader"],
       },
     ],
   },

@@ -1,157 +1,177 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import {
+  clearSelectedCategoryList,
+  setSelectedCategoryList,
+  toggleSelectedCategoryViewType,
+} from "../../store/actions/TreeView";
 import CategoryAPI from "../../utils/api/categoryAPI";
+import EventButton from "../common/EventButton";
 import GrowingLoader from "../common/GrowingLoader";
-import SelectableCategory from "./SelectableCategory";
-import SelectedCategory from "./SelectedCategory";
+import ListRenderer from "../common/Hoc/ListRenderer";
+import SelectableCategoryItem from "./PopulateCategoryList/SelectableCategoryItem";
+import SelectedCategoryItem from "./PopulateCategoryList/SelectedCategoryItem";
 
 class TreeViewComponent extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       isLoading: true,
       categoryList: [],
       categoryMap: {},
-      selectedNodeList: [],
-      isTreeView: false,
     };
-    this.getSelectedCategories = this.getSelectedCategories.bind(this);
-    this.setSelectedStatus = this.setSelectedStatus.bind(this);
-    this.removeSelected = this.removeSelected.bind(this);
-    this.removeAllSelected = this.removeAllSelected.bind(this);
-    this.getParentNameBreadcrumb = this.getParentNameBreadcrumb.bind(this);
-    this.getParentBreadcrumb = this.getParentBreadcrumb.bind(this);
+    this.setSelectedCategories = this.setSelectedCategories.bind(this);
+    this.getParentBreadcrumbString = this.getParentBreadcrumbString.bind(this);
   }
 
   componentDidMount() {
     this.setState({ isLoading: true });
-    CategoryAPI.getCategoryList().then((categoryArray) => {
-      this.setCategoryData(categoryArray);
-    });
+    CategoryAPI.getCategoryList()
+      .then((categoryArray) => {
+        this.setCategoryData(categoryArray);
+      })
+      .catch((error) => {
+        console.log("Error loading data!");
+      });
   }
 
+  /**
+   * Set the category map and category list data via provided array of categories.
+   * @param {Array} categoryArray category array list
+   */
   setCategoryData(categoryArray) {
-    const categoryMap = categoryArray.reduce((acc, el, i) => {
-      el.children = [];
-      el.isSelected = false;
-      acc[el.id] = el;
-      return acc;
+    const categoryMap = categoryArray.reduce((categoryMap, item) => {
+      item.children = [];
+      item.isSelected = false;
+      categoryMap[item.id] = item;
+      return categoryMap;
     }, {});
-    const categoryList = categoryArray.reduce((t, node) => {
+    const categoryList = categoryArray.reduce((categoryList, node) => {
       const current = categoryMap[node.id];
       try {
         if (current.parent === "0") {
-          t.push(current);
+          categoryList.push(current);
         } else {
           categoryMap[node.parent].children.push(current);
         }
       } catch (error) {
         console.log("Failed to fetch data for ID - " + node.parent);
       }
-      return t;
+      return categoryList;
     }, []);
     this.setState({ categoryMap, categoryList, isLoading: false });
   }
 
-  getSelectedCategories(element, selected) {
-    this.setSelectedStatus(element, selected);
+  /**
+   * Set the selected status of an element, and updates the category list of the state.
+   * @param {object} element selected category element
+   * @param {boolean} selected boolean value to set
+   */
+  setSelectedCategories(element, selected) {
+    this.toggleElementSelectedStatus(element, selected);
     this.setState({
       categoryList: [...this.state.categoryList],
     });
   }
 
-  removeSelected(item) {
-    this.setSelectedStatus(item, false);
-    this.setState({
-      categoryList: [...this.state.categoryList],
-    });
+  /**
+   * Toggle the selected status of the provided element, and its children nodes.
+   * @param {object} element selected category element
+   * @param {boolean} selected boolean value to set
+   */
+  toggleElementSelectedStatus(element, selected = true) {
+    if (element) {
+      element.isSelected = selected;
+      (element.children || []).forEach((e) => {
+        this.toggleElementSelectedStatus(e, selected);
+      });
+    }
   }
 
-  removeAllSelected() {
-    this.setState({
-      selectedNodeList: [],
-    });
+  /**
+   * Populates the breadcrumb string of parent names for a provided parent ID.
+   * @param {string} parentId parent ID of the element
+   * @returns {string} breadcrumb string
+   */
+  getParentBreadcrumbString(parentId) {
+    return this.populateBreadcrumbString(parentId).reverse().join(" / ");
   }
 
-  setSelectedStatus(element, selected) {
-    element.isSelected = selected;
-    element.children.forEach((e) => {
-      this.setSelectedStatus(e, selected);
-    });
-  }
-
-  getParentNameBreadcrumb(id) {
-    return this.getParentBreadcrumb(id);
-  }
-
-  getParentBreadcrumb(id, nameList = []) {
-    if (id === "0") return nameList;
-    const parentName = this.state.categoryMap[id];
-    nameList.push(parentName?.name);
-    if (parentName.parent !== "0") {
-      this.getParentBreadcrumb(parentName.parent, nameList);
+  /**
+   * Populates the name array of parent names for a provided parent ID.
+   * @param {string} parentId parent ID of the element
+   * @param {Array} nameList name list array
+   * @returns {Array} name list array of the parents
+   */
+  populateBreadcrumbString(parentId, nameList = []) {
+    if (parentId === "0") return nameList;
+    const parentCategory = this.state.categoryMap[parentId];
+    if (parentCategory) {
+      nameList.push(parentCategory?.name);
+      if (parentCategory.parent !== "0") {
+        this.populateBreadcrumbString(parentCategory.parent, nameList);
+      }
     }
     return nameList;
   }
 
   render() {
-    const {
-      isLoading,
-      isTreeView,
-      categoryList,
-      selectedNodeList,
-    } = this.state;
+    const { isLoading, categoryList } = this.state;
+    const { selectedCategoryList, showAsTree, dispatch } = this.props;
+
     return (
       <>
-        <div className="row category-main-row">
+        <div className="row p-0 m-0 category-main-row">
           <div className="col-md-6 mt-3 mb-3">
             <div className="card category-card">
               <div className="card-header">
-                <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    this.setState({
-                      selectedNodeList: JSON.parse(
-                        JSON.stringify(categoryList)
-                      ),
-                    });
+                <EventButton
+                  classNames="btn-primary"
+                  label=" Add Selected"
+                  onSubmit={() => {
+                    dispatch(
+                      setSelectedCategoryList([
+                        ...JSON.parse(JSON.stringify(categoryList)),
+                      ])
+                    );
                   }}
-                >
-                  Add Selected Category(s)
-                </button>
+                ></EventButton>
               </div>
               <div className="card-body category-card-body">
                 {isLoading && <GrowingLoader />}
-                <SelectableCategory
-                  categoryList={categoryList}
-                  getSelectedCategories={this.getSelectedCategories}
-                />
+                <ListRenderer
+                  elementList={categoryList}
+                  setSelectedCategories={this.setSelectedCategories}
+                >
+                  <SelectableCategoryItem />
+                </ListRenderer>
               </div>
             </div>
           </div>
           <div className="col-md-6 mt-3 mb-3">
             <div className="card">
-              <div className="card-header">
-                <button
-                  className="btn btn-danger"
-                  onClick={() => this.removeAllSelected()}
-                >
-                  Remove All Select Category(s)
-                </button>
-                <button
-                  className="btn btn-link ml-2"
-                  onClick={() => this.setState({ isTreeView: !isTreeView })}
-                >
-                  Change View
-                </button>
+              <div className="card-header selected">
+                <EventButton
+                  classNames="btn-danger"
+                  label="Remove All"
+                  onSubmit={() => dispatch(clearSelectedCategoryList())}
+                ></EventButton>
+                <i
+                  className={`fa ${
+                    showAsTree ? "fa-list" : "fa-indent"
+                  } toggle-view-icon`}
+                  aria-hidden="true"
+                  title="Toggle View"
+                  onClick={() => dispatch(toggleSelectedCategoryViewType())}
+                ></i>
               </div>
               <div className="card-body">
-                <SelectedCategory
-                  nodeList={selectedNodeList}
-                  isTreeView={isTreeView}
-                  removeSelected={this.removeSelected}
-                  getSelectedCategories={this.getSelectedCategories}
-                  getParentNameBreadcrumb={this.getParentNameBreadcrumb}
-                />
+                <ListRenderer
+                  elementList={selectedCategoryList}
+                  getParentBreadcrumbString={this.getParentBreadcrumbString}
+                >
+                  <SelectedCategoryItem />
+                </ListRenderer>
               </div>
             </div>
           </div>
@@ -161,4 +181,11 @@ class TreeViewComponent extends Component {
   }
 }
 
-export default TreeViewComponent;
+const mapStateToProps = (state, ownProps) => {
+  const { treeView } = state;
+  return {
+    ...ownProps,
+    ...treeView,
+  };
+};
+export default connect(mapStateToProps, null)(TreeViewComponent);

@@ -1,6 +1,7 @@
-const HtmlWebPackPlugin = require("html-webpack-plugin");
-var webpack = require("webpack");
+const webpack = require("webpack");
 const path = require("path");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const HtmlWebPackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   mode: "production",
@@ -20,10 +21,23 @@ module.exports = {
         use: ["babel-loader"],
       },
       {
-        test: /\.css$/i,
+        test: /\.s[ac]ss$/i,
         use: [
-          { loader: "style-loader", options: { injectType: "linkTag" } },
-          { loader: "file-loader", options: { name: "[name].[ext]" } },
+          {
+            loader: MiniCssExtractPlugin.loader,
+          },
+          {
+            loader: "css-loader",
+            options: {
+              sourceMap: true,
+            },
+          },
+          {
+            loader: "sass-loader",
+            options: {
+              sourceMap: true,
+            },
+          },
         ],
       },
     ],
@@ -32,6 +46,10 @@ module.exports = {
     new HtmlWebPackPlugin({
       template: "./public/index.html",
       filename: "./index.html",
+    }),
+    new MiniCssExtractPlugin({
+      filename: "[name].css",
+      chunkFilename: "[id].css",
     }),
   ],
   resolve: {

@@ -3,9 +3,9 @@ import TreeViewComponent from "../../components/TreeViewComponent";
 
 const HomePage = () => {
   return (
-    <>
+    <div className="tree-view-container">
       <TreeViewComponent />
-    </>
+    </div>
   );
 };
 

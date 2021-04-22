@@ -1,0 +1,17 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: $full-length;
+  font-family: "Roboto", sans-serif !important;
+  font-size: 15px;
+  width: $full-length;
+  overflow: hidden;
+  user-select: none;
+}
+
+.spinner-grow {
+  top: 25%;
+  left: 45%;
+  position: relative;
+}

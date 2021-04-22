@@ -511,14 +511,18 @@ const categoryList = [
   },
 ];
 
-const CategoryAPI = {
+class CategoryAPI {
+  /**
+   * Get available category list.
+   * @returns {Array} array of categories
+   */
   getCategoryList() {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         resolve(categoryList);
       }, 1000);
     });
-  },
-};
+  }
+}
 
-export default CategoryAPI;
+export default new CategoryAPI();
