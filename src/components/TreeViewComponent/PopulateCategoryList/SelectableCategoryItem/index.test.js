@@ -1,5 +1,4 @@
 import SelectableCategoryItem from ".";
-import TreeViewComponent from "../..";
 import TestUtils from "../../../../utils/TestUtils";
 
 const validElement = {
